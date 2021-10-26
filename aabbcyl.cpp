@@ -12,6 +12,7 @@
 #include <string>
 #include <chrono>
 #include <math.h>
+#include <assert.h>
 
 namespace gte
 {
@@ -190,7 +191,20 @@ namespace gte
                 : UnitCross({ 1.0, 0.0, 0.0 }, cyl.axis.direction);
             const Vector<3, Real> direction2 = Cross(cyl.axis.direction, direction1);
 
-            std::array<Vector<2, Real>, 24> points;
+            // Suppose N vertices are cropped by the cyl's top plane:
+            //      no. of vertices convex polyhedron
+            //          <= 8         [original]
+            //           - N         [cropped]
+            //           + 3 * N     [cropped vertex splits in 3 along its edges due to crop plane]
+            //           - 2 * (N-1) [*]
+            //          <= 8 [original] + 2 [independent of N]
+            // [*] After a first vertex is cropped by a crop plane, each additional vertex cropped
+            //     by that crop plane is attached via one or more of its edges to one or more of
+            //     the already cropped vertices (cropped by that crop plane). The splits accounted
+            //     for by the term 3 * N are hence corrected by this term, as edges in between two
+            //     vertices cropped by that crop plane are removed as well by that crop plane.
+            // Same consideration for cyl's bottom plane: total no. of vertices <= 8 + 2 + 2 = 12.
+            std::array<Vector<2, Real>, 12> points;
             int numPoints = 0;
 
             for (uint32_t idx = 0; idx < vertices.size(); ++idx)
@@ -205,6 +219,7 @@ namespace gte
                             continue; // both cropped by maxAxisCyl
                         const Real a = (maxAxisCyl - neighbor.projAxis) / (vtx.projAxis - neighbor.projAxis);
                         const Vector<3, Real> point = a * vtx.coord + (static_cast<Real>(1.0) - a) * neighbor.coord;
+                        assert(numPoints < points.size());
                         points[numPoints++] = { Dot(direction1, point), Dot(direction2, point) };
                     }
                 }
@@ -217,11 +232,13 @@ namespace gte
                             continue; // both cropped by minAxisCyl
                         const Real a = (minAxisCyl - neighbor.projAxis) / (vtx.projAxis - neighbor.projAxis);
                         const Vector<3, Real> point = a * vtx.coord + (static_cast<Real>(1.0) - a) * neighbor.coord;
+                        assert(numPoints < points.size());
                         points[numPoints++] = { Dot(direction1, point), Dot(direction2, point) };
                     }
                 }
                 else
                 {
+                    assert(numPoints < points.size());
                     points[numPoints++] = { Dot(direction1, vtx.coord), Dot(direction2, vtx.coord) };
                 }
             }
