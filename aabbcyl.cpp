@@ -43,18 +43,15 @@ namespace gte
             }
         }
 
+    private:
+
         template <size_t size>
-        Result compare(const uint8_t numPoints, const std::array<Vector<2, Real>, size>& points, const Vector<2, Real>& center, const Real radius, const Real tolerance) const
+        uint8_t convexHull2dSimple(std::array<uint8_t, size>& hull, const uint8_t numPoints, const std::array<Vector<2, Real>, size>& points) const
         {
-            if (numPoints > size)
-                return Result::error;
-            if (numPoints == 0)
-                return Result::disjoint;
-            const Real radiusSquared = radius * radius;
-            if (numPoints == 1)
+            if (numPoints <= 2)
             {
-                Vector<2, Real> diff = points[0] - center;
-                return Dot(diff, diff) > radiusSquared ? Result::disjoint : Result::intersects;
+                for (uint8_t idx = 0; idx < numPoints; ++idx) { hull[idx] = idx; }
+                return numPoints;
             }
 
             // Compute the convex hull counter clockwise
@@ -68,7 +65,6 @@ namespace gte
                           ((points[left][0] == points[right][0]) && (points[left][1] < points[right][1]));
                 });
 
-            std::array<uint8_t, size> hull = {};
             const uint8_t jMin = sorted[0];
             const uint8_t jMax = sorted[numPoints - 1];
 
@@ -131,46 +127,10 @@ namespace gte
                 }
             }
 
-            // Compare center's distance w.r.t. hull and/or whether center is enclosed in the hull
-            const uint8_t end = last + 1;
-            bool enclosed = true;
-            for (uint8_t idx = 0; idx < end; ++idx)
-            {
-                const Vector<2, Real>& P = points[hull[idx]];
-                const Vector<2, Real>& Q = points[hull[(idx + 1) % end]];
-                const Vector<2, Real> PQ = Q - P;
-                const Vector<2, Real> PC = center - P;
-                if (PQ[0] * PC[1] < PQ[1] * PC[0])
-                    enclosed = false;
-                // point(z) = z * Q + (1 - z) * P
-                // |point(z) - C|^2 = |z * PQ - PC|^2 = z*z*PQ.PQ - 2*z*PQ.PC + PC.PC
-                const Real PQsq = Dot(PQ, PQ);
-                const Real PCsq = Dot(PC, PC);
-                Real value = static_cast<Real>(0.0);
-                if (PQsq < tolerance)
-                    value = PCsq;
-                else
-                {
-                    const Real PQdotPC = Dot(PQ, PC);
-                    const Real z = PQdotPC / PQsq;
-                    if (z <= static_cast<Real>(0.0))
-                        value = PCsq;
-                    else if (z >= static_cast<Real>(1.0))
-                    {
-                        const Vector<2, Real> QC = center - Q;
-                        value = Dot(QC, QC);
-                    }
-                    else
-                        value = z * (z * PQsq - static_cast<Real>(2.0) * PQdotPC) + PCsq;
-                }
-                if (value <= radiusSquared)
-                    return Result::intersects;
-            }
-            if (enclosed)
-                return Result::intersects;
-            else
-                return Result::disjoint;
+            return ++last;
         }
+
+    public:
 
         Result operator()(AlignedBox3<Real> const& box, Cylinder3<Real> const& cyl) const
         {
@@ -270,7 +230,56 @@ namespace gte
             // The convex polygon can be computed as the convex hull of the projected polyhedron's vertices.
             // Determine whether the polygon contains a point sufficiently close to the cylinder's center.
             const Vector<2, Real> center = { Dot(direction1, cyl.axis.origin), Dot(direction2, cyl.axis.origin) };
-            return compare<points.size()>(numPoints, points, center, cyl.radius, tolerance);
+            const Real radiusSquared = cyl.radius * cyl.radius;
+            if (numPoints == 0)
+                return Result::disjoint;
+            else if (numPoints == 1)
+            {
+                Vector<2, Real> diff = points[0] - center;
+                return Dot(diff, diff) > radiusSquared ? Result::disjoint : Result::intersects;
+            }
+
+            std::array<uint8_t, points.size()> hull;
+            const uint8_t end = convexHull2dSimple(hull, numPoints, points);
+
+            // Compare center's distance w.r.t. hull and/or whether center is enclosed in the hull
+            bool enclosed = true;
+            for (uint8_t idx = 0; idx < end; ++idx)
+            {
+                const Vector<2, Real>& P = points[hull[idx]];
+                const Vector<2, Real>& Q = points[hull[(idx + 1) % end]];
+                const Vector<2, Real> PQ = Q - P;
+                const Vector<2, Real> PC = center - P;
+                if (PQ[0] * PC[1] < PQ[1] * PC[0])
+                    enclosed = false;
+                // point(z) = z * Q + (1 - z) * P
+                // |point(z) - C|^2 = |z * PQ - PC|^2 = z*z*PQ.PQ - 2*z*PQ.PC + PC.PC
+                const Real PQsq = Dot(PQ, PQ);
+                const Real PCsq = Dot(PC, PC);
+                Real value = static_cast<Real>(0.0);
+                if (PQsq < tolerance)
+                    value = PCsq;
+                else
+                {
+                    const Real PQdotPC = Dot(PQ, PC);
+                    const Real z = PQdotPC / PQsq;
+                    if (z <= static_cast<Real>(0.0))
+                        value = PCsq;
+                    else if (z >= static_cast<Real>(1.0))
+                    {
+                        const Vector<2, Real> QC = center - Q;
+                        value = Dot(QC, QC);
+                    }
+                    else
+                        value = z * (z * PQsq - static_cast<Real>(2.0) * PQdotPC) + PCsq;
+                }
+                if (value <= radiusSquared)
+                    return Result::intersects;
+            }
+            if (enclosed)
+                return Result::intersects;
+            else
+                return Result::disjoint;
         }
     };
 }
