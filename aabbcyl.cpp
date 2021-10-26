@@ -257,7 +257,7 @@ namespace gte
                 const Real PQsq = Dot(PQ, PQ);
                 const Real PCsq = Dot(PC, PC);
                 Real value = static_cast<Real>(0.0);
-                if (PQsq < tolerance)
+                if (PQsq < tolerance * tolerance)
                     value = PCsq;
                 else
                 {
