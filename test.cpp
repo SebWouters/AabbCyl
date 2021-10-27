@@ -13,6 +13,7 @@
 #include <iostream>
 #include <chrono>
 
+
 int main()
 {
     using namespace gte;
@@ -98,12 +99,12 @@ int main()
     const auto c6 = solver2(box2, cyl6);
     end = std::chrono::system_clock::now();
     timeS = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count() * 1e-9;
-    std::cout << "c1 = " << solver2.str(c1) << std::endl;
-    std::cout << "c2 = " << solver2.str(c2) << std::endl;
-    std::cout << "c3 = " << solver2.str(c3) << std::endl;
-    std::cout << "c4 = " << solver2.str(c4) << std::endl;
-    std::cout << "c5 = " << solver2.str(c5) << std::endl;
-    std::cout << "c6 = " << solver2.str(c6) << std::endl;
+    std::cout << "c1 = " << (c1 == Solver<Real>::Result::intersects ? "intersects" : "disjoint") << std::endl;
+    std::cout << "c2 = " << (c2 == Solver<Real>::Result::intersects ? "intersects" : "disjoint") << std::endl;
+    std::cout << "c3 = " << (c3 == Solver<Real>::Result::intersects ? "intersects" : "disjoint") << std::endl;
+    std::cout << "c4 = " << (c4 == Solver<Real>::Result::intersects ? "intersects" : "disjoint") << std::endl;
+    std::cout << "c5 = " << (c5 == Solver<Real>::Result::intersects ? "intersects" : "disjoint") << std::endl;
+    std::cout << "c6 = " << (c6 == Solver<Real>::Result::intersects ? "intersects" : "disjoint") << std::endl;
     std::cout << "time [seconds] = " << timeS << std::endl;
 
     return 0;

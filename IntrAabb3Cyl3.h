@@ -8,7 +8,6 @@
 #include <Mathematics/AlignedBox.h>
 #include <Mathematics/Cylinder3.h>
 
-#include <string>
 #include <assert.h>
 
 namespace gte
@@ -20,26 +19,9 @@ namespace gte
 
         enum Result : uint8_t
         {
-            error = 0,
-            intersects = 1,
-            disjoint = 2
+            disjoint = 0,
+            intersects = 1
         };
-
-        std::string str(const Result result) const
-        {
-            switch (result)
-            {
-            case Result::intersects:
-                return "intersects";
-                break;
-            case Result::disjoint:
-                return "disjoint";
-                break;
-            case Result::error:
-            default:
-                return "error";
-            }
-        }
 
     private:
 
