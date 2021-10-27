@@ -49,8 +49,8 @@ int main()
     const Cylinder3<Real> cyl3(axis34, cyl3Radius, cyl34Height);
     const Cylinder3<Real> cyl4(axis34, cyl4Radius, cyl34Height);
 
-    // Test case box2 - cyl5 : disjoint
-    // Test case box2 - cyl6 : intersect
+    // Test case box - cyl5 : disjoint
+    // Test case box - cyl6 : intersect
     const Vector<3, Real> center56 = { 1.5, 1.5, 1.5 };
     const Vector<3, Real> direction56 = { 1.0, 0.0, 0.0 };
     const Line<3, Real> axis56(center56, direction56);
@@ -70,12 +70,9 @@ int main()
     auto end = std::chrono::system_clock::now();
     double timeS = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count() * 1e-9;
     const bool lcpOK =
-        result1.intersect == 0 &&
-        result2.intersect == 1 &&
-        result3.intersect == 0 &&
-        result4.intersect == 1 &&
-        result5.intersect == 0 &&
-        result6.intersect == 1;
+        !result1.intersect && result2.intersect &&
+        !result3.intersect && result4.intersect &&
+        !result5.intersect && result6.intersect;
     std::cout << "LCP:  Result = " << (lcpOK ? "ok" : "not ok") << std::endl;
     std::cout << "LCP:  Time [seconds] = " << timeS << std::endl;
 
@@ -89,12 +86,9 @@ int main()
     end = std::chrono::system_clock::now();
     timeS = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count() * 1e-9;
     const bool projOK =
-        c1.intersect == 0 &&
-        c2.intersect == 1 &&
-        c3.intersect == 0 &&
-        c4.intersect == 1 &&
-        c5.intersect == 0 &&
-        c6.intersect == 1;
+        !c1.intersect && c2.intersect &&
+        !c3.intersect && c4.intersect &&
+        !c5.intersect && c6.intersect;
     std::cout << "Proj: Result = " << (projOK ? "ok" : "not ok") << std::endl;
     std::cout << "Proj: Time [seconds] = " << timeS << std::endl;
     if (lcpOK && projOK)
