@@ -75,19 +75,15 @@ int main()
     const auto result6 = solver1(box2, cyl6);
     auto end = std::chrono::system_clock::now();
     double timeS = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count() * 1e-9;
-    std::cout << "result1.intersect = " << result1.intersect << (result1.intersect == 0 ? " (ok)" : " (not ok)") << std::endl;
-    std::cout << "result1.numLCPIterations = " << result1.numLCPIterations << std::endl;
-    std::cout << "result2.intersect = " << result2.intersect << (result2.intersect == 1 ? " (ok)" : " (not ok)") << std::endl;
-    std::cout << "result2.numLCPIterations = " << result2.numLCPIterations << std::endl;
-    std::cout << "result3.intersect = " << result3.intersect << (result3.intersect == 0 ? " (ok)" : " (not ok)") << std::endl;
-    std::cout << "result3.numLCPIterations = " << result3.numLCPIterations << std::endl;
-    std::cout << "result4.intersect = " << result4.intersect << (result4.intersect == 1 ? " (ok)" : " (not ok)") << std::endl;
-    std::cout << "result4.numLCPIterations = " << result4.numLCPIterations << std::endl;
-    std::cout << "result5.intersect = " << result5.intersect << (result5.intersect == 0 ? " (ok)" : " (not ok)") << std::endl;
-    std::cout << "result5.numLCPIterations = " << result5.numLCPIterations << std::endl;
-    std::cout << "result6.intersect = " << result6.intersect << (result6.intersect == 1 ? " (ok)" : " (not ok)") << std::endl;
-    std::cout << "result6.numLCPIterations = " << result6.numLCPIterations << std::endl;
-    std::cout << "time [seconds] = " << timeS << std::endl;
+    const bool lcpOK =
+        result1.intersect == 0 &&
+        result2.intersect == 1 &&
+        result3.intersect == 0 &&
+        result4.intersect == 1 &&
+        result5.intersect == 0 &&
+        result6.intersect == 1;
+    std::cout << "Result LCP = " << (lcpOK ? "ok" : "not ok") << std::endl;
+    std::cout << "Time LCP [seconds] = " << timeS << std::endl;
 
     start = std::chrono::system_clock::now();
     Solver<Real> solver2;
@@ -99,14 +95,19 @@ int main()
     const auto c6 = solver2(box2, cyl6);
     end = std::chrono::system_clock::now();
     timeS = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count() * 1e-9;
-    std::cout << "c1 = " << (c1 == Solver<Real>::Result::intersects ? "intersects" : "disjoint") << std::endl;
-    std::cout << "c2 = " << (c2 == Solver<Real>::Result::intersects ? "intersects" : "disjoint") << std::endl;
-    std::cout << "c3 = " << (c3 == Solver<Real>::Result::intersects ? "intersects" : "disjoint") << std::endl;
-    std::cout << "c4 = " << (c4 == Solver<Real>::Result::intersects ? "intersects" : "disjoint") << std::endl;
-    std::cout << "c5 = " << (c5 == Solver<Real>::Result::intersects ? "intersects" : "disjoint") << std::endl;
-    std::cout << "c6 = " << (c6 == Solver<Real>::Result::intersects ? "intersects" : "disjoint") << std::endl;
-    std::cout << "time [seconds] = " << timeS << std::endl;
-
-    return 0;
+    const bool projOK =
+        c1 == Solver<Real>::Result::disjoint   &&
+        c2 == Solver<Real>::Result::intersects &&
+        c3 == Solver<Real>::Result::disjoint   &&
+        c4 == Solver<Real>::Result::intersects &&
+        c5 == Solver<Real>::Result::disjoint   &&
+        c6 == Solver<Real>::Result::intersects;
+    std::cout << "Result Projection = " << (projOK ? "ok" : "not ok") << std::endl;
+    std::cout << "Time Projection [seconds] = " << timeS << std::endl;
+    if (lcpOK && projOK)
+        return 0;
+    else
+        return 127;
 }
+
 
