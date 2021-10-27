@@ -132,8 +132,6 @@ namespace gte
 
         Result operator()(AlignedBox3<Real> const& box, Cylinder3<Real> const& cyl) const
         {
-            constexpr Real tolerance = static_cast<Real>(1e-10);
-
             struct Vertex
             {
                 const Vector<3, Real> coord;
@@ -183,9 +181,9 @@ namespace gte
             // Compute the vertices of a polyhedron which is the box capped by the cylinder's
             // top and bottom planes and project them into a plane perpendicular to the
             // cylinder axis direction.
-            const Vector<3, Real> direction1 = fabs(cyl.axis.direction[0]) > 0.9
-                ? UnitCross({ 0.0, 1.0, 0.0 }, cyl.axis.direction)
-                : UnitCross({ 1.0, 0.0, 0.0 }, cyl.axis.direction);
+            const Vector<3, Real> direction1 = fabs(cyl.axis.direction[0]) > static_cast<Real>(0.9)
+                ? UnitCross({ static_cast<Real>(0.0), static_cast<Real>(1.0), static_cast<Real>(0.0) }, cyl.axis.direction)
+                : UnitCross({ static_cast<Real>(1.0), static_cast<Real>(0.0), static_cast<Real>(0.0) }, cyl.axis.direction);
             const Vector<3, Real> direction2 = Cross(cyl.axis.direction, direction1);
 
             // Suppose N vertices are cropped by the cyl's top plane:
@@ -212,10 +210,13 @@ namespace gte
                     for (uint32_t shift = 0; shift < 3; ++shift)
                     {
                         const Vertex& neighbor = vertices[idx ^ (1U << shift)];
-                        if (neighbor.proj > maxAxisCyl || fabs(vtx.proj - neighbor.proj) < tolerance)
+                        if (neighbor.proj > maxAxisCyl)
                             continue; // both cropped by maxAxisCyl
-                        const Real a = (maxAxisCyl - neighbor.proj) / (vtx.proj - neighbor.proj);
-                        const Vector<3, Real> point = a * vtx.coord + (static_cast<Real>(1.0) - a) * neighbor.coord;
+                        const Real denom = vtx.proj - neighbor.proj; // denom > 0.0
+                        if (denom == static_cast<Real>(0.0))
+                            continue; // floating point accuracy check
+                        const Real z = (maxAxisCyl - neighbor.proj) / denom; // 1.0 > z >= 0.0
+                        const Vector<3, Real> point = z * vtx.coord + (static_cast<Real>(1.0) - z) * neighbor.coord;
                         assert(numPoints < points.size());
                         points[numPoints++] = { Dot(direction1, point), Dot(direction2, point) };
                     }
@@ -225,10 +226,13 @@ namespace gte
                     for (uint32_t shift = 0; shift < 3; ++shift)
                     {
                         const Vertex& neighbor = vertices[idx ^ (1U << shift)];
-                        if (neighbor.proj < minAxisCyl || fabs(vtx.proj - neighbor.proj) < tolerance)
+                        if (neighbor.proj < minAxisCyl)
                             continue; // both cropped by minAxisCyl
-                        const Real a = (minAxisCyl - neighbor.proj) / (vtx.proj - neighbor.proj);
-                        const Vector<3, Real> point = a * vtx.coord + (static_cast<Real>(1.0) - a) * neighbor.coord;
+                        const Real denom = vtx.proj - neighbor.proj; // denom < 0.0
+                        if (denom == static_cast<Real>(0.0))
+                            continue; // floating point accuracy check
+                        const Real z = (minAxisCyl - neighbor.proj) / denom; // 1.0 > z >= 0.0
+                        const Vector<3, Real> point = z * vtx.coord + (static_cast<Real>(1.0) - z) * neighbor.coord;
                         assert(numPoints < points.size());
                         points[numPoints++] = { Dot(direction1, point), Dot(direction2, point) };
                     }
@@ -267,11 +271,11 @@ namespace gte
                 if (PQ[0] * PC[1] < PQ[1] * PC[0])
                     enclosed = false;
                 // point(z) = z * Q + (1 - z) * P
-                // |point(z) - C|^2 = |z * PQ - PC|^2 = z*z*PQ.PQ - 2*z*PQ.PC + PC.PC
+                // |point(z) - C|^2 = |z * PQ - PC|^2
                 const Real PQsq = Dot(PQ, PQ);
                 const Real PCsq = Dot(PC, PC);
                 Real value = static_cast<Real>(0.0);
-                if (PQsq < tolerance * tolerance)
+                if (PQsq == static_cast<Real>(0.0))
                     value = PCsq;
                 else
                 {
