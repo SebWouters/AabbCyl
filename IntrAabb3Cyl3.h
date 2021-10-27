@@ -53,7 +53,7 @@ namespace gte
             }
 
             // Compute the convex hull counter clockwise
-            // Use Andrew's algorithm (see section 3.9 of Christer, Real-time collision detection (2005), ISBN 1-55860-732-3)
+            // Use Andrew's algorithm (see section 3.9.1 of Christer, Real-time collision detection (2005), ISBN 1-55860-732-3)
             std::array<uint8_t, size> sorted = {};
             for (uint8_t idx = 0; idx < numPoints; ++idx) { sorted[idx] = idx; }
             std::sort(sorted.begin(), sorted.begin() + numPoints,
@@ -170,14 +170,14 @@ namespace gte
             const Real maxAxisCyl = midAxisCyl + halfHeight;
             const Real minAxisCyl = midAxisCyl - halfHeight;
 
-            constexpr uint8_t binInside = 0;
-            constexpr uint8_t binAbove = 1;
-            constexpr uint8_t binBelow = 2;
-            std::array<uint8_t, 3> histogram = { 0, 0, 0 };
+            bool allAbove = true;
+            bool allBelow = true;
             for (const Vertex& vtx : vertices)
-                ++histogram[vtx.proj > maxAxisCyl ? binAbove : (vtx.proj < minAxisCyl ? binBelow : binInside)];
-            if (histogram[binAbove] == vertices.size() ||
-                histogram[binBelow] == vertices.size())
+            {
+                allAbove = allAbove && (vtx.proj > maxAxisCyl);
+                allBelow = allBelow && (vtx.proj < minAxisCyl);
+            }
+            if (allAbove || allBelow)
                 return Result::disjoint; // cyl.axis.direction is a separating axis
 
             // Compute the vertices of a polyhedron which is the box capped by the cylinder's
