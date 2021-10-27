@@ -5,10 +5,10 @@
 
 // Alternative AABB-CYL collision detection
 
+#pragma once
+
 #include <Mathematics/AlignedBox.h>
 #include <Mathematics/Cylinder3.h>
-
-#include <assert.h>
 
 namespace gte
 {
@@ -199,7 +199,6 @@ namespace gte
                             continue; // floating point accuracy check
                         const Real z = (maxAxisCyl - neighbor.proj) / denom; // 1.0 > z >= 0.0
                         const Vector<3, Real> point = z * vtx.coord + (static_cast<Real>(1.0) - z) * neighbor.coord;
-                        assert(numPoints < points.size());
                         points[numPoints++] = { Dot(direction1, point), Dot(direction2, point) };
                     }
                 }
@@ -215,13 +214,11 @@ namespace gte
                             continue; // floating point accuracy check
                         const Real z = (minAxisCyl - neighbor.proj) / denom; // 1.0 > z >= 0.0
                         const Vector<3, Real> point = z * vtx.coord + (static_cast<Real>(1.0) - z) * neighbor.coord;
-                        assert(numPoints < points.size());
                         points[numPoints++] = { Dot(direction1, point), Dot(direction2, point) };
                     }
                 }
                 else
                 {
-                    assert(numPoints < points.size());
                     points[numPoints++] = { Dot(direction1, vtx.coord), Dot(direction2, vtx.coord) };
                 }
             }
