@@ -11,6 +11,7 @@
 #include <Mathematics/Line.h>
 
 #include <iostream>
+#include <iomanip>
 #include <vector>
 #include <chrono>
 #include <random>
@@ -86,6 +87,7 @@ int main()
             const auto result2 = Solver<Real>()(box, cyl);
             if (result1.intersect != result2.intersect)
             {
+                std::cout << std::setprecision(16);
                 std::cout << "Difference:\n";
                 std::cout << "    box.min            = { " << box.min[0] << ", " << box.min[1] << ", " << box.min[2] << " }\n";
                 std::cout << "    box.max            = { " << box.max[0] << ", " << box.max[1] << ", " << box.max[2] << " }\n";
