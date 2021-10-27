@@ -3,9 +3,12 @@ include(CheckCXXCompilerFlag)
 
 set(GT_FOLDER "${CMAKE_SOURCE_DIR}/../GeometricTools/GTE")
 
+enable_testing()
+
 project(aabbcyl)
-add_executable(aabbcyl test.cpp)
-target_include_directories(aabbcyl PRIVATE ${GT_FOLDER})
+add_executable(test1 test1.cpp)
+target_include_directories(test1 PRIVATE ${GT_FOLDER})
+add_test(test1 test1)
 
 set (CMAKE_VERBOSE_MAKEFILE ON)
 
