@@ -75,7 +75,7 @@ int main()
         for (const Cylinder3<Real>& cyl : cylinders)
         {
             const auto result = solver2(box, cyl);
-            countProjIntr += result == Solver<Real>::Result::intersects;
+            countProjIntr += result.intersect;
         }
     end = std::chrono::system_clock::now();
     timeS = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count() * 1e-9;
@@ -87,7 +87,7 @@ int main()
         {
             const auto result1 = solver1(box, cyl);
             const auto result2 = solver2(box, cyl);
-            if (result1.intersect != (result2 == Solver<Real>::Result::intersects))
+            if (result1.intersect != result2.intersect)
             {
                 std::cout << "Difference\n";
                 std::cout << "    box.min = { " << box.min[0] << ", " << box.min[1] << ", " << box.min[2] << " }\n";
@@ -98,7 +98,7 @@ int main()
                 std::cout << "    cyl.height = " << cyl.height << "\n";
                 std::cout << "LCP: intersect        = " << result1.intersect << "\n";
                 std::cout << "LCP: numIterations    = " << result1.numLCPIterations << "\n";
-                std::cout << "Projection: intersect = " << (result2 == Solver<Real>::Result::intersects) << std::endl;
+                std::cout << "Projection: intersect = " << result2.intersect << std::endl;
                 return 0;
             }
         }

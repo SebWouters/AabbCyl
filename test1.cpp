@@ -96,12 +96,12 @@ int main()
     end = std::chrono::system_clock::now();
     timeS = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count() * 1e-9;
     const bool projOK =
-        c1 == Solver<Real>::Result::disjoint   &&
-        c2 == Solver<Real>::Result::intersects &&
-        c3 == Solver<Real>::Result::disjoint   &&
-        c4 == Solver<Real>::Result::intersects &&
-        c5 == Solver<Real>::Result::disjoint   &&
-        c6 == Solver<Real>::Result::intersects;
+        c1.intersect == 0 &&
+        c2.intersect == 1 &&
+        c3.intersect == 0 &&
+        c4.intersect == 1 &&
+        c5.intersect == 0 &&
+        c6.intersect == 1;
     std::cout << "Proj: Result = " << (projOK ? "ok" : "not ok") << std::endl;
     std::cout << "Proj: Time [seconds] = " << timeS << std::endl;
     if (lcpOK && projOK)

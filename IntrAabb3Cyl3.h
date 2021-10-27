@@ -17,10 +17,9 @@ namespace gte
     {
     public:
 
-        enum Result : uint8_t
+        struct Result
         {
-            disjoint = 0,
-            intersects = 1
+            bool intersect;
         };
 
     private:
@@ -114,6 +113,9 @@ namespace gte
 
         Result operator()(AlignedBox3<Real> const& box, Cylinder3<Real> const& cyl) const
         {
+            constexpr Result disjoint   = { false };
+            constexpr Result intersects = { true  };
+
             struct Vertex
             {
                 const Vector<3, Real> coord;
@@ -158,7 +160,7 @@ namespace gte
                 allBelow = allBelow && (vtx.proj < minAxisCyl);
             }
             if (allAbove || allBelow)
-                return Result::disjoint; // cyl.axis.direction is a separating axis
+                return disjoint; // cyl.axis.direction is a separating axis
 
             // Compute the vertices of a polyhedron which is the box capped by the cylinder's
             // top and bottom planes and project them into a plane perpendicular to the
@@ -229,11 +231,11 @@ namespace gte
             const Vector<2, Real> center = { Dot(direction1, cyl.axis.origin), Dot(direction2, cyl.axis.origin) };
             const Real radiusSquared = cyl.radius * cyl.radius;
             if (numPoints == 0)
-                return Result::disjoint;
+                return disjoint;
             else if (numPoints == 1)
             {
                 Vector<2, Real> diff = points[0] - center;
-                return Dot(diff, diff) > radiusSquared ? Result::disjoint : Result::intersects;
+                return Dot(diff, diff) > radiusSquared ? disjoint : intersects;
             }
 
             std::array<uint8_t, points.size()> hull;
@@ -271,12 +273,12 @@ namespace gte
                         value = z * (z * PQsq - static_cast<Real>(2.0) * PQdotPC) + PCsq;
                 }
                 if (value <= radiusSquared)
-                    return Result::intersects;
+                    return intersects;
             }
             if (enclosed)
-                return Result::intersects;
+                return intersects;
             else
-                return Result::disjoint;
+                return disjoint;
         }
     };
 }
