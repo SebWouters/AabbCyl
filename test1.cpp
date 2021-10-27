@@ -82,8 +82,8 @@ int main()
         result4.intersect == 1 &&
         result5.intersect == 0 &&
         result6.intersect == 1;
-    std::cout << "Result LCP = " << (lcpOK ? "ok" : "not ok") << std::endl;
-    std::cout << "Time LCP [seconds] = " << timeS << std::endl;
+    std::cout << "LCP: Result = " << (lcpOK ? "ok" : "not ok") << std::endl;
+    std::cout << "LCP: Time [seconds] = " << timeS << std::endl;
 
     start = std::chrono::system_clock::now();
     Solver<Real> solver2;
@@ -102,8 +102,8 @@ int main()
         c4 == Solver<Real>::Result::intersects &&
         c5 == Solver<Real>::Result::disjoint   &&
         c6 == Solver<Real>::Result::intersects;
-    std::cout << "Result Projection = " << (projOK ? "ok" : "not ok") << std::endl;
-    std::cout << "Time Projection [seconds] = " << timeS << std::endl;
+    std::cout << "Proj: Result = " << (projOK ? "ok" : "not ok") << std::endl;
+    std::cout << "Proj: Time [seconds] = " << timeS << std::endl;
     if (lcpOK && projOK)
         return 0;
     else

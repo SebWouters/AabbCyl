@@ -3,12 +3,7 @@ include(CheckCXXCompilerFlag)
 
 set(GT_FOLDER "${CMAKE_SOURCE_DIR}/../GeometricTools/GTE")
 
-enable_testing()
-
 project(aabbcyl)
-add_executable(test1 test1.cpp)
-target_include_directories(test1 PRIVATE ${GT_FOLDER})
-add_test(test1 test1)
 
 set (CMAKE_VERBOSE_MAKEFILE ON)
 
@@ -44,4 +39,14 @@ if (HAS_FLTO)
     set (CMAKE_CXX_FLAGS "-flto ${CMAKE_CXX_FLAGS}")
 endif()
 
+enable_testing()
+
+add_executable(test1 test1.cpp)
+add_executable(test2 test2.cpp)
+
+target_include_directories(test1 PRIVATE ${GT_FOLDER})
+target_include_directories(test2 PRIVATE ${GT_FOLDER})
+
+add_test(test1 test1)
+add_test(test2 test2)
 
