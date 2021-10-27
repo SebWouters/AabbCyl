@@ -5,10 +5,10 @@
 
 // Alternative AABB-CYL collision detection
 
-#include <Mathematics/IntrAlignedBox3Cylinder3.h>
+#include <Mathematics/AlignedBox.h>
+#include <Mathematics/Cylinder3.h>
 
 #include <string>
-#include <math.h>
 #include <assert.h>
 
 namespace gte
@@ -137,10 +137,10 @@ namespace gte
             struct Vertex
             {
                 const Vector<3, Real> coord;
-                const Real            projAxis;
+                const Real            proj;
                 Vertex(const std::array<Real, 3>& in, const Vector<3, Real>& axis)
                     : coord(in)
-                    , projAxis(Dot(coord, axis)) {}
+                    , proj(Dot(coord, axis)) {}
             };
 
             /*
@@ -175,7 +175,7 @@ namespace gte
             constexpr uint8_t binBelow = 2;
             std::array<uint8_t, 3> histogram = { 0, 0, 0 };
             for (const Vertex& vtx : vertices)
-                ++histogram[vtx.projAxis > maxAxisCyl ? binAbove : (vtx.projAxis < minAxisCyl ? binBelow : binInside)];
+                ++histogram[vtx.proj > maxAxisCyl ? binAbove : (vtx.proj < minAxisCyl ? binBelow : binInside)];
             if (histogram[binAbove] == vertices.size() ||
                 histogram[binBelow] == vertices.size())
                 return Result::disjoint; // cyl.axis.direction is a separating axis
@@ -207,27 +207,27 @@ namespace gte
             for (uint32_t idx = 0; idx < vertices.size(); ++idx)
             {
                 const Vertex& vtx = vertices[idx];
-                if (vtx.projAxis > maxAxisCyl)
+                if (vtx.proj > maxAxisCyl)
                 {
                     for (uint32_t shift = 0; shift < 3; ++shift)
                     {
                         const Vertex& neighbor = vertices[idx ^ (1U << shift)];
-                        if (neighbor.projAxis > maxAxisCyl || fabs(vtx.projAxis - neighbor.projAxis) < tolerance)
+                        if (neighbor.proj > maxAxisCyl || fabs(vtx.proj - neighbor.proj) < tolerance)
                             continue; // both cropped by maxAxisCyl
-                        const Real a = (maxAxisCyl - neighbor.projAxis) / (vtx.projAxis - neighbor.projAxis);
+                        const Real a = (maxAxisCyl - neighbor.proj) / (vtx.proj - neighbor.proj);
                         const Vector<3, Real> point = a * vtx.coord + (static_cast<Real>(1.0) - a) * neighbor.coord;
                         assert(numPoints < points.size());
                         points[numPoints++] = { Dot(direction1, point), Dot(direction2, point) };
                     }
                 }
-                else if (vtx.projAxis < minAxisCyl)
+                else if (vtx.proj < minAxisCyl)
                 {
                     for (uint32_t shift = 0; shift < 3; ++shift)
                     {
                         const Vertex& neighbor = vertices[idx ^ (1U << shift)];
-                        if (neighbor.projAxis < minAxisCyl || fabs(vtx.projAxis - neighbor.projAxis) < tolerance)
+                        if (neighbor.proj < minAxisCyl || fabs(vtx.proj - neighbor.proj) < tolerance)
                             continue; // both cropped by minAxisCyl
-                        const Real a = (minAxisCyl - neighbor.projAxis) / (vtx.projAxis - neighbor.projAxis);
+                        const Real a = (minAxisCyl - neighbor.proj) / (vtx.proj - neighbor.proj);
                         const Vector<3, Real> point = a * vtx.coord + (static_cast<Real>(1.0) - a) * neighbor.coord;
                         assert(numPoints < points.size());
                         points[numPoints++] = { Dot(direction1, point), Dot(direction2, point) };

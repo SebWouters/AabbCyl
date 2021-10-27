@@ -12,7 +12,6 @@
 
 #include <iostream>
 #include <chrono>
-#include <math.h>
 
 int main()
 {
