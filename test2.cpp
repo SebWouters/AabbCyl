@@ -53,70 +53,52 @@ int main()
         cylinders.emplace_back(axis, radius, height);
     }
 
-    TIQuery<Real, AlignedBox3<Real>, Cylinder3<Real>> solver1;
-    Solver<Real> solver2;
-
     auto start = std::chrono::system_clock::now();
     size_t countLcpIntr = 0;
     for (const AlignedBox3<Real>& box : boxes)
         for (const Cylinder3<Real>& cyl : cylinders)
         {
-            const auto result = solver1(box, cyl);
-            countLcpIntr += result.intersect;
+            const auto result1 = TIQuery<Real, AlignedBox3<Real>, Cylinder3<Real>>()(box, cyl);
+            countLcpIntr += result1.intersect;
         }
     auto end = std::chrono::system_clock::now();
     double timeS = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count() * 1e-9;
-    std::cout << "LCP: Number of intersects / Number of cases = " << countLcpIntr << " / " << boxes.size() * cylinders.size() << std::endl;
-    std::cout << "LCP: Time [seconds] = " << timeS << std::endl;
+    std::cout << "LCP:  Number of intersects / Number of cases = " << countLcpIntr << " / " << boxes.size() * cylinders.size() << std::endl;
+    std::cout << "LCP:  Time [seconds] = " << timeS << std::endl;
 
     start = std::chrono::system_clock::now();
     size_t countProjIntr = 0;
     for (const AlignedBox3<Real>& box : boxes)
         for (const Cylinder3<Real>& cyl : cylinders)
         {
-            const auto result = solver2(box, cyl);
-            countProjIntr += result.intersect;
+            const auto result2 = Solver<Real>()(box, cyl);
+            countProjIntr += result2.intersect;
         }
     end = std::chrono::system_clock::now();
     timeS = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count() * 1e-9;
-    std::cout << "Projection: Number of intersects / Number of cases = " << countProjIntr << " / " << boxes.size() * cylinders.size() << std::endl;
-    std::cout << "Projection: Time [seconds] = " << timeS << std::endl;
+    std::cout << "Proj: Number of intersects / Number of cases = " << countProjIntr << " / " << boxes.size() * cylinders.size() << std::endl;
+    std::cout << "Proj: Time [seconds] = " << timeS << std::endl;
 
     for (const AlignedBox3<Real>& box : boxes)
         for (const Cylinder3<Real>& cyl : cylinders)
         {
-            const auto result1 = solver1(box, cyl);
-            const auto result2 = solver2(box, cyl);
+            const auto result1 = TIQuery<Real, AlignedBox3<Real>, Cylinder3<Real>>()(box, cyl);
+            const auto result2 = Solver<Real>()(box, cyl);
             if (result1.intersect != result2.intersect)
             {
-                std::cout << "Difference\n";
-                std::cout << "    box.min = { " << box.min[0] << ", " << box.min[1] << ", " << box.min[2] << " }\n";
-                std::cout << "    box.max = { " << box.max[0] << ", " << box.max[1] << ", " << box.max[2] << " }\n";
+                std::cout << "Difference:\n";
+                std::cout << "    box.min            = { " << box.min[0] << ", " << box.min[1] << ", " << box.min[2] << " }\n";
+                std::cout << "    box.max            = { " << box.max[0] << ", " << box.max[1] << ", " << box.max[2] << " }\n";
                 std::cout << "    cyl.axis.origin    = { " << cyl.axis.origin[0] << ", " << cyl.axis.origin[1] << ", " << cyl.axis.origin[2] << " }\n";
                 std::cout << "    cyl.axis.direction = { " << cyl.axis.direction[0] << ", " << cyl.axis.direction[1] << ", " << cyl.axis.direction[2] << " }\n";
-                std::cout << "    cyl.radius = " << cyl.radius << "\n";
-                std::cout << "    cyl.height = " << cyl.height << "\n";
-                std::cout << "LCP: intersect        = " << result1.intersect << "\n";
-                std::cout << "LCP: numIterations    = " << result1.numLCPIterations << "\n";
-                std::cout << "Projection: intersect = " << result2.intersect << std::endl;
+                std::cout << "    cyl.radius         = " << cyl.radius << "\n";
+                std::cout << "    cyl.height         = " << cyl.height << "\n";
+                std::cout << "LCP:  intersect        = " << result1.intersect << "\n";
+                std::cout << "LCP:  numIterations    = " << result1.numLCPIterations << "\n";
+                std::cout << "Proj: intersect        = " << result2.intersect << std::endl;
                 return 0;
             }
         }
-
-    /*
-    Example failure:
-        Difference
-            box.min = { -0.572262, -0.591058, 0.83576 }
-            box.max = { -0.206206, -0.129254, 1.13998 }
-            cyl.axis.origin    = { 0.448691, -0.588225, 0.176887 }
-            cyl.axis.direction = { 0.224273, -0.115889, -0.967611 }
-            cyl.radius = 0.155937
-            cyl.height = 0.441871
-        LCP: intersect        = 1
-        LCP: numIterations    = 3
-        Projection: intersect = 0
-    However, cyl.axis.origin[2] + 0.5 * cyl.height + cyl.radius = 0.5537595 < box.min[2]
-    */
 
     return 0;
 }

@@ -66,13 +66,12 @@ int main()
     const Cylinder3<Real> cyl6(axis56, cyl6Radius, cyl56Height);
 
     auto start = std::chrono::system_clock::now();
-    TIQuery<Real, AlignedBox3<Real>, Cylinder3<Real>> solver1;
-    const auto result1 = solver1(box1, cyl1);
-    const auto result2 = solver1(box1, cyl2);
-    const auto result3 = solver1(box2, cyl3);
-    const auto result4 = solver1(box2, cyl4);
-    const auto result5 = solver1(box2, cyl5);
-    const auto result6 = solver1(box2, cyl6);
+    const auto result1 = TIQuery<Real, AlignedBox3<Real>, Cylinder3<Real>>()(box1, cyl1);
+    const auto result2 = TIQuery<Real, AlignedBox3<Real>, Cylinder3<Real>>()(box1, cyl2);
+    const auto result3 = TIQuery<Real, AlignedBox3<Real>, Cylinder3<Real>>()(box2, cyl3);
+    const auto result4 = TIQuery<Real, AlignedBox3<Real>, Cylinder3<Real>>()(box2, cyl4);
+    const auto result5 = TIQuery<Real, AlignedBox3<Real>, Cylinder3<Real>>()(box2, cyl5);
+    const auto result6 = TIQuery<Real, AlignedBox3<Real>, Cylinder3<Real>>()(box2, cyl6);
     auto end = std::chrono::system_clock::now();
     double timeS = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count() * 1e-9;
     const bool lcpOK =
@@ -82,17 +81,16 @@ int main()
         result4.intersect == 1 &&
         result5.intersect == 0 &&
         result6.intersect == 1;
-    std::cout << "LCP: Result = " << (lcpOK ? "ok" : "not ok") << std::endl;
-    std::cout << "LCP: Time [seconds] = " << timeS << std::endl;
+    std::cout << "LCP:  Result = " << (lcpOK ? "ok" : "not ok") << std::endl;
+    std::cout << "LCP:  Time [seconds] = " << timeS << std::endl;
 
     start = std::chrono::system_clock::now();
-    Solver<Real> solver2;
-    const auto c1 = solver2(box1, cyl1);
-    const auto c2 = solver2(box1, cyl2);
-    const auto c3 = solver2(box2, cyl3);
-    const auto c4 = solver2(box2, cyl4);
-    const auto c5 = solver2(box2, cyl5);
-    const auto c6 = solver2(box2, cyl6);
+    const auto c1 = Solver<Real>()(box1, cyl1);
+    const auto c2 = Solver<Real>()(box1, cyl2);
+    const auto c3 = Solver<Real>()(box2, cyl3);
+    const auto c4 = Solver<Real>()(box2, cyl4);
+    const auto c5 = Solver<Real>()(box2, cyl5);
+    const auto c6 = Solver<Real>()(box2, cyl6);
     end = std::chrono::system_clock::now();
     timeS = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count() * 1e-9;
     const bool projOK =
