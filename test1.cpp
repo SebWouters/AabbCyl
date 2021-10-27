@@ -19,17 +19,17 @@ int main()
     using namespace gte;
     using Real = double;
 
-    // Test case box1 - cyl1 : disjoint
-    // Test case box1 - cyl2 : intersect
-    const Vector<3, Real> box1MinPoint = { 0.0, 0.0, 0.0 };
-    const Vector<3, Real> box1MaxPoint = { 1000.0, 1000.0, 1000.0 };
-    const AlignedBox3<Real> box1(box1MinPoint, box1MaxPoint);
+    const Vector<3, Real> boxMinPoint = { 0.0, 0.0, 0.0 };
+    const Vector<3, Real> boxMaxPoint = { 1.0, 1.0, 1.0 };
+    const AlignedBox3<Real> box(boxMinPoint, boxMaxPoint);
 
-    const Vector<3, Real> point1 = { 1136.0,  952.0, 600.0 };
-    const Vector<3, Real> point2 = { 1560.0, 1252.0, 900.0 };
-    constexpr Real cyl1Radius = 200.0;
-    constexpr Real cyl2Radius = 210.0;
-    constexpr Real cyl12Height = 600.0;
+    // Test case box - cyl1 : disjoint
+    // Test case box - cyl2 : intersect
+    const Vector<3, Real> point1 = { 1.136, 0.952, 0.600 };
+    const Vector<3, Real> point2 = { 1.560, 1.252, 0.900 };
+    constexpr Real cyl1Radius = 0.200;
+    constexpr Real cyl2Radius = 0.210;
+    constexpr Real cyl12Height = 0.600;
     Vector<3, Real> direction12 = (point2 - point1);
     Normalize(direction12);
     Vector<3, Real> center12 = 0.5 * (point1 + point2);
@@ -37,14 +37,9 @@ int main()
     const Cylinder3<Real> cyl1(axis12, cyl1Radius, cyl12Height);
     const Cylinder3<Real> cyl2(axis12, cyl2Radius, cyl12Height);
 
-    // Test case box2 - cyl3 : disjoint
-    // Test case box2 - cyl4 : intersect
-    const Vector<3, Real> box2MinPoint = { 0.0, 0.0, 0.0 };
-    const Vector<3, Real> box2MaxPoint = { 1.0, 1.0, 1.0 };
-    const AlignedBox3<Real> box2(box2MinPoint, box2MaxPoint);
-
-    constexpr Real y = 0.25;
-    const Vector<3, Real> center34 = { 1.0 + y, 1.0 + y, 1.0 };
+    // Test case box - cyl3 : disjoint
+    // Test case box - cyl4 : intersect
+    const Vector<3, Real> center34 = { 1.25, 1.25, 1.0 };
     const Real sqrt3 = std::sqrt(3.0);
     const Vector<3, Real> direction34 = { 1.0 / sqrt3, 1.0 / sqrt3, -1.0 / sqrt3 };
     const Line<3, Real> axis34(center34, direction34);
@@ -66,12 +61,12 @@ int main()
     const Cylinder3<Real> cyl6(axis56, cyl6Radius, cyl56Height);
 
     auto start = std::chrono::system_clock::now();
-    const auto result1 = TIQuery<Real, AlignedBox3<Real>, Cylinder3<Real>>()(box1, cyl1);
-    const auto result2 = TIQuery<Real, AlignedBox3<Real>, Cylinder3<Real>>()(box1, cyl2);
-    const auto result3 = TIQuery<Real, AlignedBox3<Real>, Cylinder3<Real>>()(box2, cyl3);
-    const auto result4 = TIQuery<Real, AlignedBox3<Real>, Cylinder3<Real>>()(box2, cyl4);
-    const auto result5 = TIQuery<Real, AlignedBox3<Real>, Cylinder3<Real>>()(box2, cyl5);
-    const auto result6 = TIQuery<Real, AlignedBox3<Real>, Cylinder3<Real>>()(box2, cyl6);
+    const auto result1 = TIQuery<Real, AlignedBox3<Real>, Cylinder3<Real>>()(box, cyl1);
+    const auto result2 = TIQuery<Real, AlignedBox3<Real>, Cylinder3<Real>>()(box, cyl2);
+    const auto result3 = TIQuery<Real, AlignedBox3<Real>, Cylinder3<Real>>()(box, cyl3);
+    const auto result4 = TIQuery<Real, AlignedBox3<Real>, Cylinder3<Real>>()(box, cyl4);
+    const auto result5 = TIQuery<Real, AlignedBox3<Real>, Cylinder3<Real>>()(box, cyl5);
+    const auto result6 = TIQuery<Real, AlignedBox3<Real>, Cylinder3<Real>>()(box, cyl6);
     auto end = std::chrono::system_clock::now();
     double timeS = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count() * 1e-9;
     const bool lcpOK =
@@ -85,12 +80,12 @@ int main()
     std::cout << "LCP:  Time [seconds] = " << timeS << std::endl;
 
     start = std::chrono::system_clock::now();
-    const auto c1 = Solver<Real>()(box1, cyl1);
-    const auto c2 = Solver<Real>()(box1, cyl2);
-    const auto c3 = Solver<Real>()(box2, cyl3);
-    const auto c4 = Solver<Real>()(box2, cyl4);
-    const auto c5 = Solver<Real>()(box2, cyl5);
-    const auto c6 = Solver<Real>()(box2, cyl6);
+    const auto c1 = Solver<Real>()(box, cyl1);
+    const auto c2 = Solver<Real>()(box, cyl2);
+    const auto c3 = Solver<Real>()(box, cyl3);
+    const auto c4 = Solver<Real>()(box, cyl4);
+    const auto c5 = Solver<Real>()(box, cyl5);
+    const auto c6 = Solver<Real>()(box, cyl6);
     end = std::chrono::system_clock::now();
     timeS = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count() * 1e-9;
     const bool projOK =
